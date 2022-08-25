@@ -17,7 +17,7 @@ Quick-and-dirty script for collecting personal expenses statistics from Georgian
 export CREDO_LOGIN=XXX
 export CREDO_PWD=YYY
 export CREDO_ACC=GE...
-./run
+./run.sh
 ```
 * Run DB client and edit rows `WHERE category = 'unknown' OR account = 'u'`
 

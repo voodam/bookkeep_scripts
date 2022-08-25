@@ -4,6 +4,8 @@ CREATE TABLE ledger (
   amount DECIMAL(7,2),
   category VARCHAR(16),
   account CHAR(1),
+  iban VARCHAR(32),
+  currency CHAR(3),
   PRIMARY KEY(target, date, amount)
 );
 

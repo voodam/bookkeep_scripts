@@ -3,7 +3,7 @@
   "TARIELI LTD": "food",
   # magnit
   "RETAIL GROUP LTD": "food",
-  "www.Railway.ge": "trip",
-  "magti.com": "phone",
-  "rs.ge1": "tax"
+  "www\\.Railway\\.ge": "trip",
+  "magti\\.com": "phone",
+  "rs\\.ge1": "tax"
 }
