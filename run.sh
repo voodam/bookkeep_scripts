@@ -3,6 +3,7 @@
 . credo.sh
 
 CUR="${CUR:-GEL}"
+BANK="${BANK:-Credo}"
 
 DB_NAME="data/ledger.db"
 STAT_XLSX="data/stat.xlsx"
@@ -25,7 +26,7 @@ if [[ "$@" == *"download"* ]] || [[ "$@" == "" ]]; then
 fi
 
 if [[ "$@" == *"dump"* ]] || [[ "$@" == "" ]]; then
-  ./import.py "$STAT_XLSX" > "$STAT_SQL"
+  ./import.py "$BANK" "$STAT_XLSX" > "$STAT_SQL"
   echo "$STAT_SQL" created
 fi
 
