@@ -11,12 +11,16 @@ class Row:
   target: str
   date: datetime
   amount: float
+  iban: str
+  currency: str
 
 @dataclass
 class AugmentedRow:
   target: str
   date: datetime
   amount: float
+  iban: str
+  currency: str
   category: str
   account: str
 
@@ -28,38 +32,29 @@ class DataSource:
     }[bankname]
     return cls(*args)
 
-  def get_iban(self) -> str:
-    pass
-
-  def get_currency(self) -> str:
-    pass
-
   def get_rows(self) -> Sequence[Row]:
     pass
 
+  def __init__(self, ignored_ibans: Sequence[str]):
+    # Skip it if you don't plan to use _skip_target
+    self.skip_targets_regexp = util.seq_to_regexp(self._get_specific_skip_targets() + ignored_ibans)
+
   def _get_specific_skip_targets(self) -> Sequence[str]:
     return []
-
-  def _init_skip_targets(self, ignored_ibans: Sequence[str]):
-    self.skip_targets_regexp = util.seq_to_regexp(self._get_specific_skip_targets() + ignored_ibans)
 
   def _skip_target(self, target):
     return bool(re.search(self.skip_targets_regexp, target, re.IGNORECASE))
 
 class CredoSource(DataSource):
   def __init__(self, filename, ignored_ibans = []):
+    DataSource.__init__(self, ignored_ibans)
     import openpyxl
-    self.account_sheet, self.transactions_sheet = openpyxl.load_workbook(filename = filename).worksheets
-    self._init_skip_targets(ignored_ibans)
+    account_sheet, self.transactions_sheet = openpyxl.load_workbook(filename = filename).worksheets
+    self.iban = account_sheet.cell(row=3, column=2).value
+    self.currency = account_sheet.cell(row=4, column=2).value
 
   def _get_specific_skip_targets(self):
     return ["Конвертация суммы", "Convert amount", "ანაბრის გახსნა", "ავტომატური შევსების ოპერაცია", "უნაღდო კონვერტაცია", "დეპოზიტის თანხის გატანა"]
-
-  def get_iban(self):
-    return self.account_sheet.cell(row=3, column=2).value
-
-  def get_currency(self):
-    return self.account_sheet.cell(row=4, column=2).value
 
   def get_rows(self):
     result = []
@@ -77,7 +72,7 @@ class CredoSource(DataSource):
 
       date = row[0].value
       amount = row[2].value
-      result.append(Row(target, date, amount))
+      result.append(Row(target, date, amount, self.iban, self.currency))
 
     return result
 

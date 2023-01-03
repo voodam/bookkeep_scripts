@@ -28,12 +28,10 @@ ignored_ibans = os.environ.get("IGNORE_IBANS")
 ignored_ibans = ignored_ibans.split(",") if ignored_ibans else []
 
 source = DataSource.create(bankname, filename, ignored_ibans)
-iban = source.get_iban()
-currency = source.get_currency()
 rows = source.get_rows()
-aug_rows = map(lambda r: AugmentedRow(r.target, r.date, r.amount, *get_defaults(r.target)), rows)
+aug_rows = map(lambda r: AugmentedRow(r.target, r.date, r.amount, r.iban, r.currency, *get_defaults(r.target)), rows)
 
 if aug_rows:
-  strings = map(lambda r: f"""('{r.target}', '{r.date}', {r.amount}, '{r.category}', '{r.account}', '{iban}', '{currency}')""", aug_rows)
+  strings = map(lambda r: f"""('{r.target}', '{r.date}', {r.amount}, '{r.category}', '{r.account}', '{r.iban}', '{r.currency}')""", aug_rows)
   values = ",\n".join(strings)
   print(f"INSERT OR IGNORE INTO ledger(target, date, amount, category, account, iban, currency) VALUES\n{values};")
