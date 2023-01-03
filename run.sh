@@ -4,9 +4,9 @@
 
 CUR="${CUR:-GEL}"
 BANK="${BANK:-Credo}"
+STAT_SRC_FILE="${STAT_SRC_FILE:-data/stat.xlsx}"
 
 DB_NAME="data/ledger.db"
-STAT_XLSX="data/stat.xlsx"
 STAT_SQL="data/stat.sql"
 
 if [[ "$@" == *"backup"* ]] || [[ "$@" == "" ]]; then
@@ -16,8 +16,8 @@ if [[ "$@" == *"backup"* ]] || [[ "$@" == "" ]]; then
 fi
 
 if [[ "$@" == *"download"* ]] || [[ "$@" == "" ]]; then
-  download_credo_xlsx "$CUR" > "$STAT_XLSX"
-  if [[ -f "$STAT_XLSX" ]] && (( $(stat -c "%s" "$STAT_XLSX") > 64 )); then
+  download_credo_SRC_FILE "$CUR" > "$STAT_SRC_FILE"
+  if [[ -f "$STAT_SRC_FILE" ]] && (( $(stat -c "%s" "$STAT_SRC_FILE") > 64 )); then
     echo Statement downloaded
   else
     echo Error while downloading statement
@@ -26,7 +26,7 @@ if [[ "$@" == *"download"* ]] || [[ "$@" == "" ]]; then
 fi
 
 if [[ "$@" == *"dump"* ]] || [[ "$@" == "" ]]; then
-  ./import.py "$BANK" "$STAT_XLSX" > "$STAT_SQL"
+  ./import.py "$BANK" "$STAT_SRC_FILE" > "$STAT_SQL"
   echo "$STAT_SQL" created
 fi
 

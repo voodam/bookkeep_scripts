@@ -22,3 +22,10 @@ export CREDO_ACC=GE...
 * Run DB client and edit rows `WHERE category = 'unknown' OR account = 'u'`
 
 If you change something from primary key (target, date or amount), entry will be duplicated.
+
+### Another usage examples
+```
+./run.sh backup
+BANK=TBC STAT_SRC_FILE=/home/statement-16078791.pdf ./run.sh dump
+./run.sh import
+```

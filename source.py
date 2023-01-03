@@ -2,6 +2,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime
 from collections.abc import Sequence
+from itertools import chain
 from typing import List
 import re
 import util
@@ -87,4 +88,46 @@ class CredoSource(DataSource):
     return target
 
 class TBCSource(DataSource):
-  pass
+  def __init__(self, filename, ignored_ibans = []):
+    DataSource.__init__(self, ignored_ibans)
+    import camelot
+    self.table_list = camelot.read_pdf(filename, pages="1-end")
+    self.iban = self._get_iban(filename)
+    self.currency = self.table_list[0].df[1][0].split("\n")[1]
+
+  def _get_specific_skip_targets(self):
+    return ["Currency Exchange", "კონვერტაცია", "საკომისიო გადარიცხვებზე სხვა ბანკებში"]
+
+  def _get_iban(self, filename):
+    import PyPDF2
+    with open(filename, "rb") as file:
+      reader = PyPDF2.PdfFileReader(file)
+      text = reader.getPage(0).extractText()
+    return re.search("Account  Statement:\nანგარიშის მფლობელი:(.*) ", text)[1]
+
+  def get_rows(self):
+    result = []
+    iter = chain(*(s.df.iterrows() for s in self.table_list[2:]))
+
+    for _, row in iter:
+      if row[0] == "თარიღი\nDate":
+        continue # skip title
+      if not row[2]:
+        continue # skip incomes
+
+      match = re.search("POS - ([^,]+),\s*თანხა (?:[\d.]+ \w+), ([^,]+)", row[1])
+      if match:
+        target, date = match.groups()
+        date = datetime.strptime(date, "%b %d %Y %I:%M%p")
+      else:
+        target = row[1]
+        date = datetime.strptime(row[0], "%d/%m/%Y")
+      target = target.replace("\n", " ")
+
+      if self._skip_target(target):
+        continue
+
+      amount = float(row[2].replace(",", ""))
+      result.append(Row(target, date, amount, self.iban, self.currency))
+
+    return result
